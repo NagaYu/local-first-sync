@@ -1,0 +1,49 @@
+# Build + unit tests on macOS runners.
+#
+# What CI verifies: `swift build && swift test` from a clean clone — the
+# engine, consent handshake, per-peer progress, and SwiftData sync state, all
+# against scripted fakes (46 tests).
+#
+# What CI cannot verify: real multi-device transfer. A hosted runner is one
+# VM (no second peer to discover) and macOS 15+ local-network privacy blocks
+# headless Bonjour browsing/advertising; PhotoKit likewise kills headless
+# processes via TCC. Those paths are covered by the manual device checklist
+# in CONTRIBUTING.md.
+#
+# Runner choices (July 2026): macos-26 is the current GA image; macos-14 is
+# being removed (brownouts since 2026-07-06) and macos-latest is mid-migration
+# — so both jobs pin explicit images, and DEVELOPER_DIR pins the Xcode
+# version so toolchain bumps are deliberate.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-newest:
+    name: Swift 6.3 (macos-26)
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build -v
+      - name: Run unit tests
+        run: swift test -v
+
+  # Oldest supported toolchain: proves the package builds for users still on
+  # Xcode 16.x / Swift 6.0-era compilers.
+  test-oldest-supported:
+    name: Swift 6.1 (macos-15, Xcode 16.4)
+    runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build -v
+      - name: Run unit tests
+        run: swift test -v

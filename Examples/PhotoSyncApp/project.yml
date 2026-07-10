@@ -1,0 +1,72 @@
+# XcodeGen manifest — run `xcodegen generate` in this directory to produce
+# PhotoSyncApp.xcodeproj (or follow the manual steps in README.md).
+name: PhotoSyncApp
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+
+packages:
+  local-first-sync:
+    path: ../..
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+
+targetTemplates:
+  app:
+    type: application
+    sources: [PhotoSyncApp]
+    dependencies:
+      - package: local-first-sync
+        product: LocalFirstSync
+
+targets:
+  PhotoSyncApp-iOS:
+    templates: [app]
+    platform: iOS
+    info:
+      path: Generated/Info-iOS.plist
+      properties:
+        UILaunchScreen: {}
+        # Local-network privacy (iOS 14+): both the usage string and the
+        # Bonjour service types are REQUIRED, or discovery silently finds
+        # nothing. The entries must match the LocalSync serviceName
+        # ("lfs-photosync") with both _tcp and _udp variants.
+        NSLocalNetworkUsageDescription: >-
+          PhotoSync connects directly to your own nearby devices to sync
+          photos. Nothing leaves your local network.
+        NSBonjourServices:
+          - _lfs-photosync._tcp
+          - _lfs-photosync._udp
+        NSPhotoLibraryUsageDescription: >-
+          PhotoSync reads the photos you choose to send to your other devices.
+        NSPhotoLibraryAddUsageDescription: >-
+          PhotoSync saves photos received from your other devices.
+
+  PhotoSyncApp-macOS:
+    templates: [app]
+    platform: macOS
+    info:
+      path: Generated/Info-macOS.plist
+      properties:
+        NSLocalNetworkUsageDescription: >-
+          PhotoSync connects directly to your own nearby devices to sync
+          photos. Nothing leaves your local network.
+        NSBonjourServices:
+          - _lfs-photosync._tcp
+          - _lfs-photosync._udp
+        NSPhotoLibraryUsageDescription: >-
+          PhotoSync reads the photos you choose to send to your other devices.
+        NSPhotoLibraryAddUsageDescription: >-
+          PhotoSync saves photos received from your other devices.
+    entitlements:
+      path: Generated/PhotoSyncApp-macOS.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        # Multipeer Connectivity in a sandboxed Mac app needs both directions.
+        com.apple.security.network.client: true
+        com.apple.security.network.server: true
+        com.apple.security.personal-information.photos-library: true
