@@ -103,7 +103,7 @@ public actor SyncStateStore {
 
     /// A store that keeps everything in memory. Ideal for tests and previews.
     public static func inMemory() async throws -> SyncStateStore {
-        try await makeDetached(configuration: ModelConfiguration(isStoredInMemoryOnly: true))
+        try await makeDetached(storeURL: nil)
     }
 
     /// A store persisted at the given location, or at a default location in
@@ -119,15 +119,25 @@ public actor SyncStateStore {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             storeURL = directory.appendingPathComponent("SyncState.store", isDirectory: false)
         }
-        return try await makeDetached(configuration: ModelConfiguration(url: storeURL))
+        return try await makeDetached(storeURL: storeURL)
     }
 
     /// Builds the container and actor off the caller's actor: a ModelActor's
     /// executor binds to the context it was created in, so constructing on
     /// the main actor would silently pin all store work to the main thread.
-    private static func makeDetached(configuration: ModelConfiguration) async throws -> SyncStateStore {
+    ///
+    /// The closure captures only a Sendable `URL?` and builds the
+    /// `ModelConfiguration` inside — Swift 6.1's isolation checking can't
+    /// prove a captured configuration disconnected, so it must not cross.
+    private static func makeDetached(storeURL: URL?) async throws -> SyncStateStore {
         try await Task.detached {
             let schema = Schema(versionedSchema: SyncSchemaV1.self)
+            let configuration: ModelConfiguration
+            if let storeURL {
+                configuration = ModelConfiguration(url: storeURL)
+            } else {
+                configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+            }
             let container = try ModelContainer(for: schema, configurations: [configuration])
             return SyncStateStore(modelContainer: container)
         }.value
