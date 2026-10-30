@@ -1,5 +1,8 @@
 # local-first-sync
 
+> Standalone Apple-focused tool: photo/file sync between Apple devices over
+> Multipeer, with no cloud. This tool is separate from the local-first suite.
+
 [![CI](https://github.com/NagaYu/local-first-sync/actions/workflows/ci.yml/badge.svg)](https://github.com/NagaYu/local-first-sync/actions/workflows/ci.yml)
 [![Swift versions](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FNagaYu%2Flocal-first-sync%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/NagaYu/local-first-sync)
 [![Platforms](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FNagaYu%2Flocal-first-sync%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/NagaYu/local-first-sync)
